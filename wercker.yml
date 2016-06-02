@@ -4,7 +4,9 @@ build:
     - script:
         name: Show base information
           code: |
-            gradle -v
-            echo $JAVA_HOME
             java -version
-            javac -version
+      - script:
+          name: Run gradle
+          code: |
+            bash ./build.sh
+
