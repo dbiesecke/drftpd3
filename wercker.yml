@@ -16,5 +16,5 @@ deploy:
         tag: v1.0.0
     - github-upload-asset:
         token: $GITHUB_TOKEN
-        file: /tmp/drftpdv3/slave.zip  
+        file: /pipeline/cache/drftpd/slave.zip  
 
