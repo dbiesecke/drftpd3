@@ -18,7 +18,11 @@ deploy:
     - add-ssh-key:
         keyname: MYHIDRIVE
     - script:
+        name: remove dist files
+        code: |
+          find $WERCKER_CACHE_DIR/drftpd/ -iname "*.dist" -delete        
+    - script:
         name: copy
         code: |
-          scp $WERCKER_CACHE_DIR/drftpd/*.zip bohal@scp.hidrive.strato.com:public/
+          rsync -r $WERCKER_CACHE_DIR/drftpd bohal@scp.hidrive.strato.com:public/
 
