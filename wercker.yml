@@ -1,4 +1,4 @@
-box: tsechov/oracle-java7-sbt.0.13.7-maven3.2@1.0.1
+box: tsechov/oracle-java7-sbt.0.13.7-maven3.2
 build:
   steps:
     - script:
