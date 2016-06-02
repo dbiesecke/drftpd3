@@ -2,10 +2,11 @@ box: mbentley/oracle-jdk7
 build:
   steps:
     - script:
-        name: echo
-        code: |
-          echo "hello world!"
-    - script:
         name: Java Version
         code: |
           java -version
+    - script:
+        name: build
+        code: |
+          sh ./build.sh
+
