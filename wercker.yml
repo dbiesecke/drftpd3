@@ -1,4 +1,4 @@
-box: haroon/docker-oracle-jdk7
+box: scottweston/ant-oracle
 build:
   steps:
     - script:
