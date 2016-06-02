@@ -1,4 +1,4 @@
-box: collokia/ubuntu-with-dev-utils
+box: webratio/ant
 build:
   steps:
     - script:
