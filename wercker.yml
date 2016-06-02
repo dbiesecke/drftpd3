@@ -16,15 +16,15 @@ deploy:
     - add-to-known_hosts:
         hostname: scp.hidrive.strato.com
     - add-ssh-key:
-        keyname: hidrive-ssh
+        keyname: MYHIDRIVE
     - script:
         name: build
         code: |
-          echo $hidrive-ssh_PRIVATE      
+          echo $MYHIDRIVE_PRIVATE      
     - create-file:
         name: write key
         filename: $WERCKER_CACHE_DIR/temp.pub
-        content: $deploy_key_PRIVATE
+        content: $MYHIDRIVE_PRIVATE
         overwrite: true
         hide-from-log: true        
     - script:
