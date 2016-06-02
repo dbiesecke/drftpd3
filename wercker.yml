@@ -1,5 +1,6 @@
-box: webratio/ant
+box: busybox
 build:
+  box: webratio/ant
   steps:
     - script:
         name: build
@@ -10,6 +11,7 @@ build:
         code: |
           ./build.sh
 deploy:
+  box: appropriate/curl
   steps:
     - github-create-release:
         token: $GITHUB_TOKEN
