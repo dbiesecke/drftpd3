@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -44,6 +46,8 @@ import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
 
+import javax.net.ssl.SSLContext;
+
 /**
  * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>
  * The directives that are going to be handled by this class are loaded during
@@ -55,7 +59,7 @@ import org.drftpd.vfs.perms.VFSPermissions;
 public class ConfigManager implements ConfigInterface {
     private static final Logger logger = Logger.getLogger(ConfigManager.class);
     private static final File permsFile = new File("conf/perms.conf");
-    private static final File mainFile = new File("master.conf");
+    private static final File mainFile = new File("conf/master.conf");
 
     private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
             = new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
@@ -169,31 +173,61 @@ public class ConfigManager implements ConfigInterface {
     }
 
     private void parseCipherSuites() {
-        ArrayList<String> cipherSuites = new ArrayList<String>();
-        for (int x = 1;; x++) {
-            String cipherSuite = _mainCfg.getProperty("cipher." + x);
-            if (cipherSuite != null) {
-                cipherSuites.add(cipherSuite);
-            } else {
-                break;
+        List<String> cipherSuites = new ArrayList<String>();
+        ArrayList<String> supportedCipherSuites = new ArrayList<String>();
+        try {
+			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+            for (int x = 1;; x++) {
+                String cipherSuite = _mainCfg.getProperty("cipher." + x);
+                if (cipherSuite == null) {
+                    break;
+                } else if (supportedCipherSuites.contains(cipherSuite)) {
+                    cipherSuites.add(cipherSuite);
+                }
             }
+        } catch (Exception e) {
+            logger.error("Unable to get supported cipher suites, using default.", e);
         }
-        if (cipherSuites.size() == 0) {
+        if (supportedCipherSuites.size() == 0) {
             _cipherSuites = null;
+        } else if (cipherSuites.size() == 0) {
+            // Cipher suites not specified, add all supported and remove excluded
+            for (int x = 1;; x++) {
+                String exclCipherSuite = _mainCfg.getProperty("cipher.excl." + x);
+                if (exclCipherSuite == null) {
+                    break;
+                } else if (exclCipherSuite.trim().length() == 0) {
+                    continue;
+                }
+                Iterator<String> i = supportedCipherSuites.iterator();
+                while (i.hasNext()) {
+                    String cipherSuite = i.next();
+                    if (cipherSuite.matches(exclCipherSuite)) {
+                        i.remove();
+                    }
+                }
+            }
+            _cipherSuites = supportedCipherSuites.toArray(new String[supportedCipherSuites.size()]);
         } else {
             _cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
         }
     }
 
     private void parseSSLProtocols() {
-        ArrayList<String> sslProtocols = new ArrayList<String>();
-        for (int x = 1;; x++) {
-            String sslProtocol = _mainCfg.getProperty("protocol." + x);
-            if (sslProtocol != null) {
-                sslProtocols.add(sslProtocol);
-            } else {
-                break;
+        List<String> sslProtocols = new ArrayList<String>();
+        List<String> supportedSSLProtocols;
+        try {
+            supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+            for (int x = 1;; x++) {
+                String sslProtocol = _mainCfg.getProperty("protocol." + x);
+                if (sslProtocol == null) {
+                    break;
+                } else if (supportedSSLProtocols.contains(sslProtocol)) {
+                    sslProtocols.add(sslProtocol);
+                }
             }
+        } catch (Exception e) {
+            logger.error("Unable to get supported SSL protocols, using default.", e);
         }
         if (sslProtocols.size() == 0) {
             _sslProtocols = null;

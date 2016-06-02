@@ -30,10 +30,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.CRC32;
@@ -147,29 +149,59 @@ public class Slave {
 			_sslProtocols = null;
 		}
 
-		ArrayList<String> cipherSuites = new ArrayList<String>();
-		for (int x = 1;; x++) {
-			String cipherSuite = p.getProperty("cipher." + x);
-			if (cipherSuite != null) {
-				cipherSuites.add(cipherSuite);
-			} else {
-				break;
+		List<String> cipherSuites = new ArrayList<String>();
+		ArrayList<String> supportedCipherSuites = new ArrayList<String>();
+		try {
+			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+			for (int x = 1;; x++) {
+				String cipherSuite = p.getProperty("cipher." + x);
+				if (cipherSuite == null) {
+					break;
+				} else if (supportedCipherSuites.contains(cipherSuite)) {
+					cipherSuites.add(cipherSuite);
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Unable to get supported cipher suites, using default.", e);
 		}
-		if (cipherSuites.size() == 0) {
+		if (supportedCipherSuites.size() == 0) {
 			_cipherSuites = null;
+		} else if (cipherSuites.size() == 0) {
+			// Cipher suites not specified, add all supported and remove excluded
+			for (int x = 1;; x++) {
+				String exclCipherSuite = p.getProperty("cipher.excl." + x);
+				if (exclCipherSuite == null) {
+					break;
+				} else if (exclCipherSuite.trim().length() == 0) {
+					continue;
+				}
+				Iterator<String> i = supportedCipherSuites.iterator();
+				while (i.hasNext()) {
+					String cipherSuite = i.next();
+					if (cipherSuite.matches(exclCipherSuite)) {
+						i.remove();
+					}
+				}
+			}
+			_cipherSuites = supportedCipherSuites.toArray(new String[supportedCipherSuites.size()]);
 		} else {
 			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
 		}
 
-		ArrayList<String> sslProtocols = new ArrayList<String>();
-		for (int x = 1;; x++) {
-			String sslProtocol = p.getProperty("protocol." + x);
-			if (sslProtocol != null) {
-				sslProtocols.add(sslProtocol);
-			} else {
-				break;
+		List<String> sslProtocols = new ArrayList<String>();
+		List<String> supportedSSLProtocols;
+		try {
+			supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+			for (int x = 1;; x++) {
+				String sslProtocol = p.getProperty("protocol." + x);
+				if (sslProtocol == null) {
+					break;
+				} else if (supportedSSLProtocols.contains(sslProtocol)) {
+					sslProtocols.add(sslProtocol);
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Unable to get supported SSL protocols, using default.", e);
 		}
 		if (sslProtocols.size() == 0) {
 			_sslProtocols = null;
@@ -289,7 +321,7 @@ public class Slave {
 		Thread.currentThread().setName("Slave Main Thread");
 
 		Properties p = new Properties();
-		FileInputStream fis = new FileInputStream("slave.conf");
+		FileInputStream fis = new FileInputStream("conf/slave.conf");
 		p.load(fis);
 		fis.close();
 
