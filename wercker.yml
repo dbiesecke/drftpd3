@@ -1,4 +1,4 @@
-box: nimmis/java:openjdk-7-jdk
+box: collokia/ubuntu-with-dev-utils
 build:
   steps:
     - script:
