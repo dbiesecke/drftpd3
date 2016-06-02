@@ -16,11 +16,11 @@ deploy:
     - add-to-known_hosts:
         hostname: scp.hidrive.strato.com
     - add-ssh-key:
-        keyname: deploy_key
+        keyname: hidrive
     - script:
         name: build
         code: |
-          echo $deploy_key_PRIVATE      
+          echo $hidrive_PRIVATE      
     - create-file:
         name: write key
         filename: $WERCKER_CACHE_DIR/temp.pub
