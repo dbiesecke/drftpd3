@@ -16,7 +16,7 @@ deploy:
     - add-to-known_hosts:
         hostname: scp.hidrive.strato.com
     - add-ssh-key:
-        keyname: MYHIDRIVE
+        keyname: myhidrive
     - script:
         name: copy
         code: |
