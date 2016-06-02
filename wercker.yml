@@ -4,12 +4,17 @@ build:
     - script:
         name: build
         code: |
+          echo $WERCKER_CACHE_DIR
+    - script:
+        name: build
+        code: |
           ./build.sh
 deploy:
-    steps:
-        - github-create-release:
-            token: $GITHUB_TOKEN
-            tag: v1.0.0
-        - github-upload-asset:
-            token: $GITHUB_TOKEN
-            file: build.tgz
+  steps:
+    - github-create-release:
+        token: $GITHUB_TOKEN
+        tag: v1.0.0
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: /tmp/drftpdv3/slave.zip  
+
