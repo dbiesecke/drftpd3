@@ -5,8 +5,4 @@ build:
         name: Show base information
           code: |
             java -version
-      - script:
-          name: Run gradle
-          code: |
-            bash ./build.sh
 
