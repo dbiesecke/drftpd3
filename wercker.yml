@@ -8,7 +8,3 @@ build:
             echo $JAVA_HOME
             java -version
             javac -version
-      - script:
-          name: Run gradle
-          code: |
-            gradle --full-stacktrace -q --project-cache-dir=$WERCKER_CACHE_DIR assamble
