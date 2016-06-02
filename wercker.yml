@@ -15,7 +15,20 @@ deploy:
   steps:
     - add-to-known_hosts:
         hostname: scp.hidrive.strato.com
-        fingerprint: 2a:7d:3a:04:bd:df:02:7f:05:4b:ea:8b:32:00:47:91 
     - add-ssh-key:
-        keyname: hidrive-ssh
+        keyname: deploy_key
+    - script:
+        name: build
+        code: |
+          echo $deploy_key_PRIVATE      
+    - create-file:
+        name: write key
+        filename: $WERCKER_CACHE_DIR/temp.pub
+        content: $deploy_key_PRIVATE
+        overwrite: true
+        hide-from-log: true        
+    - script:
+        name: copy
+        code: |
+          scp $WERCKER_CACHE_DIR/drftpd/*.zip bohal@scp.hidrive.strato.com:public/
 
