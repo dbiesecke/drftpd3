@@ -1,10 +1,6 @@
-box: scottweston/ant-oracle
+box: java
 build:
   steps:
-    - script:
-        name: install ant
-        code: |
-          apt-get install -y -f ant
     - script:
         name: build
         code: |
