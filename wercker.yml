@@ -18,16 +18,6 @@ deploy:
     - add-ssh-key:
         keyname: MYHIDRIVE
     - script:
-        name: build
-        code: |
-          echo $MYHIDRIVE_PRIVATE      
-    - create-file:
-        name: write key
-        filename: $WERCKER_CACHE_DIR/temp.pub
-        content: $MYHIDRIVE_PRIVATE
-        overwrite: true
-        hide-from-log: true        
-    - script:
         name: copy
         code: |
           scp $WERCKER_CACHE_DIR/drftpd/*.zip bohal@scp.hidrive.strato.com:public/
