@@ -1,4 +1,4 @@
-box: java
+box: nimmis/java:openjdk-7-jdk
 build:
   steps:
     - script:
